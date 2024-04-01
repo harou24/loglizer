@@ -1,7 +1,7 @@
 # loglizer
-Loglizer is a web-based interface for summarizing log files
-capable of processing large amounts of data by utilizing a multi-stage pipeline consisting of
-**reader**, **worker**, and **combiner** stages to parallelize and streamline the analysis.
+Loglizer is a web-based interface for summarizing log files.
+It is capable of processing large amounts of logs data by using
+**reader**, **worker**, and **combiner** pattern to parallelize and streamline the analysis.
 <p align="center">
   <img src="/docs/diagram.jpg?raw=true" width="900" title="hover text">
 </p>
