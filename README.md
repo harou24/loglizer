@@ -1,8 +1,8 @@
 # loglizer
 Loglizer is a web-based interface for summarizing log files
-capable of processing large amounts of data by utilizing a multi-stage pipeline consisting of 
-reader, worker, and combiner stages to parallelize and streamline the analysis.
-
+capable of processing large amounts of data by utilizing a multi-stage pipeline consisting of
+**reader**, **worker**, and **combiner** stages to parallelize and streamline the analysis.
+![Mind Map - Frame 1 (4).jpg](..%2F..%2FDownloads%2FMind%20Map%20-%20Frame%201%20%284%29.jpg)
 # Running the Server
 To start the server, open your terminal and run the following command from the root directory of the project:
 
