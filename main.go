@@ -1,10 +1,13 @@
 package main
 
 import (
-	"io"
-	"io/ioutil"
+	"bufio"
 	"log"
+	"loglizer/processor"
+	"loglizer/reader"
 	"net/http"
+	"runtime"
+	"sync"
 )
 
 func main() {
@@ -26,16 +29,33 @@ func analysisHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	_, err = io.Copy(ioutil.Discard, file)
-	if err != nil {
-		http.Error(w, "Error reading file", http.StatusBadRequest)
-		return
+	logEntriesChan := make(chan []string, 10000000)
+	processedPairsChan := make(chan string, 100)
+
+	var wg sync.WaitGroup
+
+	workerCount := runtime.NumCPU()
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go processor.SummarizeLogFrequency(logEntriesChan, processedPairsChan, &wg)
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	_, err = w.Write([]byte("data received\n"))
-	if err != nil {
-		log.Printf("failed to write to response: %s", err)
-		return
+	scanner := bufio.NewScanner(file)
+	go func() {
+		reader.ReadHourlyLogBatches(scanner, logEntriesChan)
+		close(logEntriesChan)
+	}()
+
+	go func() {
+		defer close(processedPairsChan)
+		wg.Wait()
+	}()
+
+	w.Header().Set("Content-Type", "text/csv")
+	for pair := range processedPairsChan {
+		if _, err := w.Write([]byte(pair + "\n")); err != nil {
+			log.Printf("failed to write to response: %s", err)
+			return
+		}
 	}
 }
