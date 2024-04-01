@@ -1,5 +1,5 @@
 # Loglizer
-[![Go Makefile](https://github.com/harou24/loglizer/actions/workflows/main.yml/badge.svg?branch=main&event=check_run)](https://github.com/harou24/loglizer/actions/workflows/main.yml)
+[![Go Makefile](https://github.com/harou24/loglizer/actions/workflows/main.yml/badge.svg)](https://github.com/harou24/loglizer/actions/workflows/main.yml)
 
 Loglizer is a web-based interface for summarizing log files.
 It is capable of processing large amounts of logs data by using
