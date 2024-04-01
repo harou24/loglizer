@@ -3,11 +3,8 @@ package main
 import (
 	"bufio"
 	"log"
-	"loglizer/processor"
-	"loglizer/reader"
+	"loglizer/manager"
 	"net/http"
-	"runtime"
-	"sync"
 )
 
 func main() {
@@ -29,30 +26,11 @@ func analysisHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	logEntriesChan := make(chan []string, 10000000)
-	processedPairsChan := make(chan string, 100)
-
-	var wg sync.WaitGroup
-
-	workerCount := runtime.NumCPU()
-	for i := 0; i < workerCount; i++ {
-		wg.Add(1)
-		go processor.SummarizeLogFrequency(logEntriesChan, processedPairsChan, &wg)
-	}
-
 	scanner := bufio.NewScanner(file)
-	go func() {
-		reader.ReadHourlyLogBatches(scanner, logEntriesChan)
-		close(logEntriesChan)
-	}()
-
-	go func() {
-		defer close(processedPairsChan)
-		wg.Wait()
-	}()
+	resultChan := manager.StartLogProcessingWorkflow(scanner)
 
 	w.Header().Set("Content-Type", "text/csv")
-	for pair := range processedPairsChan {
+	for pair := range resultChan {
 		if _, err := w.Write([]byte(pair + "\n")); err != nil {
 			log.Printf("failed to write to response: %s", err)
 			return
