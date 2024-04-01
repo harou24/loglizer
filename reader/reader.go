@@ -13,7 +13,6 @@ func ReadHourlyLogBatches(scanner *bufio.Scanner, logEntriesChan chan<- []string
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		// TODO: make this better
 		timestamp, err := time.Parse(time.RFC3339, strings.SplitN(line, ",", 2)[0])
 		if err != nil {
 			log.Printf("error parsing timestamp: %s", err)

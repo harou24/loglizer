@@ -14,35 +14,35 @@ type LogEntry struct {
 	Message   string
 }
 
-func SummarizeLogFrequency(logEntriesChan <-chan []string, processedPairsChan chan<- string, wg *sync.WaitGroup) {
+func SummarizeLogFrequency(logEntriesChan <-chan []string, processedLogsChan chan<- string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for lines := range logEntriesChan {
 		var entries []LogEntry
 		for _, line := range lines {
-			entry, err := parseLogEntry(line)
+			entry, err := parseLog(line)
 			if err != nil {
 				log.Printf("error parsing log entry: %s", err)
 				continue
 			}
 			entries = append(entries, entry)
 		}
-		dateHour, mostFrequent := findMostFrequentPairAndFormat(entries)
-		processedPairsChan <- fmt.Sprintf("%s,%s", dateHour, mostFrequent)
+		dateHour, mostFrequent := findMostFrequentLog(entries)
+		processedLogsChan <- fmt.Sprintf("%s,%s", dateHour, mostFrequent)
 	}
 }
 
-func findMostFrequentPairAndFormat(entries []LogEntry) (string, string) {
+func findMostFrequentLog(entries []LogEntry) (string, string) {
 	frequencyMap := make(map[string]int)
 	var maxCount int
-	var mostFrequentPair string
+	var mostFrequentLog string
 	var timestamp time.Time
 
 	for _, entry := range entries {
-		pair := fmt.Sprintf("%s,%s", entry.File, entry.Message)
-		frequencyMap[pair]++
-		if frequencyMap[pair] > maxCount {
-			maxCount = frequencyMap[pair]
-			mostFrequentPair = pair
+		log := fmt.Sprintf("%s,%s", entry.File, entry.Message)
+		frequencyMap[log]++
+		if frequencyMap[log] > maxCount {
+			maxCount = frequencyMap[log]
+			mostFrequentLog = log
 
 			// Keep track of the timestamp for formatting
 			timestamp = entry.Timestamp
@@ -51,10 +51,10 @@ func findMostFrequentPairAndFormat(entries []LogEntry) (string, string) {
 
 	// New date and hour format: MMDDYYYY,HH
 	dateHour := timestamp.Format("01022006,15")
-	return dateHour, mostFrequentPair
+	return dateHour, mostFrequentLog
 }
 
-func parseLogEntry(line string) (LogEntry, error) {
+func parseLog(line string) (LogEntry, error) {
 	parts := strings.SplitN(line, ",", 3)
 	if len(parts) != 3 {
 		return LogEntry{}, fmt.Errorf("invalid log entry: %s", line)

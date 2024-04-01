@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestParseLogEntry(t *testing.T) {
+func TestParseLog(t *testing.T) {
 	input := "2019-04-30T12:01:39+02:00,network.go,Network connection established"
 	expectedTimestamp, _ := time.Parse(time.RFC3339, "2019-04-30T12:01:39+02:00")
 	expected := LogEntry{
@@ -14,7 +14,7 @@ func TestParseLogEntry(t *testing.T) {
 		File:      "network.go",
 		Message:   "Network connection established",
 	}
-	result, err := parseLogEntry(input)
+	result, err := parseLog(input)
 	if err != nil {
 		t.Errorf("parseLogEntry returned an error: %v", err)
 	}
@@ -24,23 +24,23 @@ func TestParseLogEntry(t *testing.T) {
 	}
 }
 
-func TestFindMostFrequentPairAndFormat(t *testing.T) {
+func TestFindMostFrequentLog(t *testing.T) {
 	// The most frequent message is "Error: Meme generator ran out of memes" in the test entries batch
-	expectedPair := "memeGenerator.go,Error: Meme generator ran out of memes"
+	expectedLog := "memeGenerator.go,Error: Meme generator ran out of memes"
 
 	expectedDateHour := "04302019,12"
 
-	dateHour, mostFrequentPair := findMostFrequentPairAndFormat(logEntries)
+	dateHour, mostFrequentLog := findMostFrequentLog(logEntries)
 
-	if dateHour != expectedDateHour || mostFrequentPair != expectedPair {
-		t.Errorf("findMostFrequentPairAndFormat() = %v, %v; want %v, %v", dateHour, mostFrequentPair, expectedDateHour, expectedPair)
+	if dateHour != expectedDateHour || mostFrequentLog != expectedLog {
+		t.Errorf("findMostFrequentLog() = %v, %v; want %v, %v", dateHour, mostFrequentLog, expectedDateHour, expectedLog)
 	}
 }
 
 func TestSummarizeLogFrequency(t *testing.T) {
 	// Setup: Create channels and a WaitGroup
 	logEntriesChan := make(chan []string)
-	processedPairsChan := make(chan string, 10)
+	processedLogsChan := make(chan string, 10)
 	var wg sync.WaitGroup
 
 	mockLines := []string{
@@ -55,7 +55,7 @@ func TestSummarizeLogFrequency(t *testing.T) {
 
 	// Start the function in a goroutine
 	wg.Add(1)
-	go SummarizeLogFrequency(logEntriesChan, processedPairsChan, &wg)
+	go SummarizeLogFrequency(logEntriesChan, processedLogsChan, &wg)
 
 	// Send mock data to the channel
 	go func() {
@@ -65,12 +65,12 @@ func TestSummarizeLogFrequency(t *testing.T) {
 
 	// Wait for the processing to complete
 	wg.Wait()
-	close(processedPairsChan)
+	close(processedLogsChan)
 
 	// Check the output
-	receivedOutput, ok := <-processedPairsChan
+	receivedOutput, ok := <-processedLogsChan
 	if !ok {
-		t.Fatal("Expected an output from processedPairsChan, but it was closed without sending any data")
+		t.Fatal("Processed logs channel doesn't contain the received result.")
 	}
 
 	if receivedOutput != expectedOutput {

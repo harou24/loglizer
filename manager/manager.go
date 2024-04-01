@@ -15,14 +15,14 @@ const (
 
 func StartLogProcessingWorkflow(scanner *bufio.Scanner) <-chan string {
 	logEntriesChan := make(chan []string, logsChanSize)
-	processedPairsChan := make(chan string, processedLogsChanSize)
+	processedLogsChan := make(chan string, processedLogsChanSize)
 
 	var wg sync.WaitGroup
 
 	workerCount := runtime.NumCPU()
 	for i := 0; i < workerCount; i++ {
 		wg.Add(1)
-		go processor.SummarizeLogFrequency(logEntriesChan, processedPairsChan, &wg)
+		go processor.SummarizeLogFrequency(logEntriesChan, processedLogsChan, &wg)
 	}
 
 	go func() {
@@ -31,9 +31,9 @@ func StartLogProcessingWorkflow(scanner *bufio.Scanner) <-chan string {
 	}()
 
 	go func() {
-		defer close(processedPairsChan)
+		defer close(processedLogsChan)
 		wg.Wait()
 	}()
 
-	return processedPairsChan
+	return processedLogsChan
 }
