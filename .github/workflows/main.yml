@@ -16,7 +16,6 @@ jobs:
 
     - name: Run Makefile commands
       run: |
-        make run
         make build
         make test
         make clean
