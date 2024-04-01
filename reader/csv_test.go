@@ -14,7 +14,7 @@ func TestReadHourlyLogBatches(t *testing.T) {
 	const EXPECTED_NB_BATCHES = 3
 
 	// Loading mock data to be read
-	scanner := bufio.NewScanner(strings.NewReader(mockData))
+	scanner := bufio.NewScanner(strings.NewReader(MockData))
 
 	// Create a channel to capture grouped log entries
 	logEntriesChan := make(chan []string, EXPECTED_NB_BATCHES)
@@ -50,7 +50,7 @@ func TestReadHourlyLogBatches(t *testing.T) {
 }
 
 // The first 100 lines of the CSV file
-var mockData = `2019-04-30T12:01:39+02:00,network.go,Network connection established
+var MockData = `2019-04-30T12:01:39+02:00,network.go,Network connection established
 2019-04-30T12:01:42+02:00,db.go,Transaction failed
 2019-04-30T12:02:03+02:00,tardis.go,TARDIS dematerializing
 2019-04-30T12:02:44+02:00,memeGenerator.go,Error: Meme generator ran out of memes
